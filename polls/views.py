@@ -1,11 +1,39 @@
 from django.db.models import F
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from django.views import generic
 from django.utils import timezone
+from django.db import connection
 
 from .models import Choice, Question
+
+def raw_table_view(request, table_name):
+    try:
+        with connection.cursor() as cursor:
+            # Виконуємо запит SELECT * FROM назва_таблиці
+            cursor.execute(f"SELECT * FROM {table_name}")
+            columns = [col[0] for col in cursor.description]
+            rows = cursor.fetchall()
+
+        # Формуємо HTML у рядку (без шаблону)
+        html = f"<h1>Зміст таблиці: <code>{table_name}</code></h1>"
+        html += "<table border='1' cellpadding='5'><tr>"
+        for col in columns:
+            html += f"<th>{col}</th>"
+        html += "</tr>"
+
+        for row in rows:
+            html += "<tr>"
+            for cell in row:
+                html += f"<td>{cell}</td>"
+            html += "</tr>"
+        html += "</table>"
+
+    except Exception as e:
+        html = f"<h2>Помилка:</h2><pre>{str(e)}</pre>"
+
+    return HttpResponse(html)
 
 class IndexView(generic.ListView):
     template_name = "polls/index.html"

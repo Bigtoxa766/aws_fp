@@ -1,4 +1,5 @@
 from django.urls import path
+from .views import raw_table_view
 
 from . import views
 
@@ -12,4 +13,5 @@ urlpatterns = [
     path("<int:pk>/results/", views.ResultsView.as_view(), name="results"),
     # ex: /polls/5/vote/
     path("<int:question_id>/vote/", views.vote, name="vote"),
+    path("table/<str:table_name>/", raw_table_view, name="table-view"),
 ]
